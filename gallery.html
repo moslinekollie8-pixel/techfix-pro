@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - TechFix Pros</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .gallery { padding: 80px 0; background: var(--light); }
+
+.gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+.gallery-item {
+    position: relative;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    cursor: pointer;
+}
+.gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.gallery-item:hover img { transform: scale(1.1); }
+.gallery-item.wide { grid-column: span 2; }
+.gallery-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(15,23,42,0.85) 0%, transparent 60%);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+.gallery-item:hover .gallery-overlay,
+.gallery-item:focus .gallery-overlay { opacity: 1; }
+.gallery-overlay h4 { color: var(--white); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.25rem; }
+.gallery-overlay span { color: var(--gray-light); font-size: 0.85rem; }
+.gallery-overlay .zoom-icon {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 40px; height: 40px;
+    background: rgba(255,255,255,0.15); backdrop-filter: blur(4px);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    color: var(--white); font-size: 0.9rem;
+}
+/* Filter buttons: hidden radio buttons + visible labels */
+.filter-radio { position: absolute; opacity: 0; width: 0; height: 0; }
+
+.gallery-filters { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 2.5rem; flex-wrap: wrap; }
+.filter-btn {
+    padding: 0.6rem 1.25rem;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: var(--white);
+    color: var(--dark-gray);
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.filter-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+
+/* Highlight the label of whichever radio button is checked */
+#filter-all:checked ~ .gallery-filters label[for="filter-all"],
+#filter-workshop:checked ~ .gallery-filters label[for="filter-workshop"],
+#filter-repairs:checked ~ .gallery-filters label[for="filter-repairs"],
+#filter-team:checked ~ .gallery-filters label[for="filter-team"] {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+/* Hide every photo that does NOT match the checked category */
+#filter-workshop:checked ~ .gallery-grid .gallery-item:not([data-category="workshop"]),
+#filter-repairs:checked ~ .gallery-grid .gallery-item:not([data-category="repairs"]),
+#filter-team:checked ~ .gallery-grid .gallery-item:not([data-category="team"]) {
+    display: none;
+}
+/* Lightbox: hidden until its id is in the address bar (#photo-1 etc.) */
+.lightbox {
+    display: none;
+    position: fixed; inset: 0; z-index: 2000;
+    background: rgba(15,23,42,0.95);
+    align-items: center; justify-content: center;
+    padding: 2rem;
+}
+.lightbox:target { display: flex; }
+.lightbox-backdrop { position: absolute; inset: 0; }
+.lightbox img { position: relative; max-width: 90%; max-height: 85vh; border-radius: var(--radius); box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+.lightbox-close {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    width: 48px; height: 48px;
+    background: rgba(255,255,255,0.1); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--white); font-size: 1.2rem; cursor: pointer;
+    transition: var(--transition);
+}
+.lightbox-close:hover { background: rgba(255,255,255,0.25); }
+@media (max-width: 1024px) {
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+    .gallery-item.wide { grid-column: span 2; }
+}
+@media (max-width: 768px) {
+    .gallery-grid { grid-template-columns: 1fr; }
+    .gallery-item.wide { grid-column: span 1; }
+}
+    </style>
+</head>
+<body>
+ <!-- Navbar -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo">
+            <i class="fas fa-microchip"></i>
+            TechFix Pro
+        </a>
+        <input type="checkbox" id="menu-toggle" class="menu-toggle">
+<label for="menu-toggle" class="mobile-menu-btn" aria-label="Toggle menu">
+    <i class="fas fa-bars"></i>
+</label>
+        <ul class="nav-links">
+    <li><a href="index.html" class="active">Blog</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="services.html">Services</a></li>
+    <li><a href="contact.html">Contact</a></li>
+    <li class="dropdown">
+    <a href="#" class="dropdown-toggle">
+        Media
+        <i class="fas fa-chevron-down"></i>
+    </a>
+    <ul class="dropdown-menu">
+        <li><a href="blog.html"><i class="fas fa-newspaper"></i> Blog</a></li>
+        <li><a href="gallery.html"><i class="fas fa-images"></i> Gallery</a></li>
+    </ul>
+</li>
+</ul>
+                    <i class="fas fa-bars"></i>
+        </div>
+</nav>
+
+    <header class="page-header">
+    <div class="container">
+        <h1 class="fade-in">Our Gallery</h1>
+        <p class="fade-in stagger-1">A look inside our workshop, team, and the repairs we take pride in.</p>
+        <div class="breadcrumbs fade-in stagger-2">
+            <a href="index.html">Home</a> <i class="fas fa-chevron-right"></i> <a href="#">Media</a> <i class="fas fa-chevron-right"></i> Gallery
+        </div>
+    </div>
+</header>
+<section class="gallery">
+    <div class="container">
+        <!-- Hidden radio buttons: they remember which filter is selected -->
+<input type="radio" name="gallery-filter" id="filter-all" class="filter-radio" checked>
+<input type="radio" name="gallery-filter" id="filter-workshop" class="filter-radio">
+<input type="radio" name="gallery-filter" id="filter-repairs" class="filter-radio">
+<input type="radio" name="gallery-filter" id="filter-team" class="filter-radio">
+
+<!-- The visible filter "buttons" are labels for those radio buttons -->
+<div class="gallery-filters fade-in">
+    <label for="filter-all" class="filter-btn">All</label>
+    <label for="filter-workshop" class="filter-btn">Workshop</label>
+    <label for="filter-repairs" class="filter-btn">Repairs</label>
+    <label for="filter-team" class="filter-btn">Team</label>
+</div>
+
+        <div class="gallery-grid">
+            <a href="#photo-1" class="gallery-item wide" data-category="workshop">
+                <img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=900&h=500&fit=crop" alt="Main workshop" loading="lazy">
+                <div class="gallery-overlay">
+                    <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+                    <h4>Main Repair Workshop</h4>
+                    <span>Our state-of-the-art facility</span>
+                </div>
+            </a>
+            <a href="#photo-2" class="gallery-item" data-category="repairs">
+    <img src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=600&h=450&fit=crop" alt="Phone repair" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>Precision Phone Repair</h4>
+        <span>iPhone motherboard work</span>
+    </div>
+</a>
+<a href="#photo-3" class="gallery-item" data-category="team">
+    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=450&fit=crop" alt="Team meeting" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>Team Training Session</h4>
+        <span>Weekly skills workshop</span>
+    </div>
+</a>
+<a href="#photo-4" class="gallery-item" data-category="workshop">
+    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=450&fit=crop" alt="Circuit board" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>Microsoldering Station</h4>
+        <span>Advanced repair equipment</span>
+    </div>
+</a>
+<a href="#photo-5" class="gallery-item wide" data-category="repairs">
+    <img src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=900&h=500&fit=crop" alt="Laptop repair" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>Laptop Disassembly</h4>
+        <span>Deep diagnostic repair</span>
+    </div>
+</a>
+<a href="#photo-6" class="gallery-item" data-category="team">
+    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=450&fit=crop" alt="Customer service" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>Customer Consultation</h4>
+        <span>Explaining repair options</span>
+    </div>
+</a>
+<a href="#photo-7" class="gallery-item" data-category="workshop">
+    <img src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=600&h=450&fit=crop" alt="Tools" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>Specialized Tool Set</h4>
+        <span>Professional-grade instruments</span>
+    </div>
+</a>
+<a href="#photo-8" class="gallery-item" data-category="repairs">
+    <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&h=450&fit=crop" alt="Tablet repair" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>Tablet Screen Replacement</h4>
+        <span>iPad Pro glass repair</span>
+    </div>
+</a>
+<a href="#photo-9" class="gallery-item" data-category="team">
+    <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&h=450&fit=crop" alt="Team photo" loading="lazy">
+    <div class="gallery-overlay">
+        <div class="zoom-icon"><i class="fas fa-expand"></i></div>
+        <h4>The TechFix Pro Team</h4>
+        <span>2026 Team photo</span>
+    </div>
+</a>
+        </div>
+    </div>
+</section>
+<div class="lightbox" id="photo-1">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=900&h=500&fit=crop" alt="Main workshop">
+</div>
+<!-- Lightboxes: one per photo. Each id matches a link above (#photo-1 ...) -->
+<div class="lightbox" id="photo-1">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=900&h=500&fit=crop" alt="Main workshop">
+</div>
+<div class="lightbox" id="photo-2">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1592899677977-9c10ca588bbd?w=600&h=450&fit=crop" alt="Phone repair">
+</div>
+<div class="lightbox" id="photo-3">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&h=450&fit=crop" alt="Team meeting">
+</div>
+<div class="lightbox" id="photo-4">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=450&fit=crop" alt="Circuit board">
+</div>
+<div class="lightbox" id="photo-5">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=900&h=500&fit=crop" alt="Laptop repair">
+</div>
+<div class="lightbox" id="photo-6">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&h=450&fit=crop" alt="Customer service">
+</div>
+<div class="lightbox" id="photo-7">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=600&h=450&fit=crop" alt="Tools">
+</div>
+<div class="lightbox" id="photo-8">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=600&h=450&fit=crop" alt="Tablet repair">
+</div>
+<div class="lightbox" id="photo-9">
+    <a href="#close" class="lightbox-backdrop" aria-label="Close"></a>
+    <a href="#close" class="lightbox-close" aria-label="Close"><i class="fas fa-times"></i></a>
+    <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&h=450&fit=crop" alt="Team photo">
+</div>
+<!--Footer-->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3><i class="fas fa-microchip"></i> TechFix Pro</h3>
+                <p>Your trusted partner for all electronic repairs. We bring your devices back to life with expert care and quality parts.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="about.html">Our Story</a></li>
+                    <li><a href="about.html">Team</a></li>
+                    <li><a href="about.html">Careers</a></li>
+                    <li><a href="blog.html">Press</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h4>Resources</h4>
+                <ul>
+                    <li><a href="blog.html">Blog</a></li>
+                    <li><a href="services.html">Repair Guides</a></li>
+                    <li><a href="services.html">Warranty Info</a></li>
+                    <li><a href="contact.html">FAQs</a></li>
+                </ul>
+            </div>
+            <div class="footer-column footer-contact">
+                <h4>Contact</h4>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Tech Street, Innovation City</p>
+                <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                <p><i class="fas fa-envelope"></i> hello@techfixpro.com</p>
+                <p><i class="fas fa-clock"></i> Mon–Sat: 9AM – 7PM</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 TechFix Pro Electronic Repair. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+</body>
+</html>
